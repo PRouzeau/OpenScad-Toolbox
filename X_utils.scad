@@ -1,8 +1,9 @@
 include <Z_library.scad>
-// Miscellaneous utility functions, not in Library
-// fan, ball bearings, pen
-// Miscellaneous writing routines
-// Plates 
+// Miscellaneous part modules, not in Library
+// ball bearings, fans, nema17 motors, name plates, glass locks, pen
+// Miscellaneous writing and signature routines 
+// to use it in your application set 
+// include <X_utils.scad> xpart=0; //xpart=0 neutralise demo
 
 // build_fan(size=40, thk=6) // ~ok for 25,30,40,60,80,120
 // BB (type="623", orient=1);  // ball bearings

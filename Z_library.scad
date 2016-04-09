@@ -1,12 +1,12 @@
-//OpenSCAD utility fonctions - written from scratch - Licence:  LGPL V3 Pierre ROUZEAU (aka PRZ)
+//OpenSCAD library modules - written from scratch - Licence:  LGPL V3 Pierre ROUZEAU (aka PRZ)
 /*OpenSCAD primitives gives a priority to z axis, which needs a lot of subsequent rotations. So, you quickly find yourself lost between your axis, which have been swapped by the rotations. That drive for complex objects to build them on a X/Y plane, then to rotate the ensemble. It is tedious and unpractical.
   Also, OpenSCAD is using a lot of brackets, which are hard to get on some non-QWERTY keyboards.
-  This basic library is aimed to ease openSCAD programming and improve readability. Also, primitive names are short. This is not the todays trend, but I find it useful, whithout real penalty. 
+  This library is aimed to ease openSCAD programming and improve readability. Also, primitive names are short. This is not the todays trend, but I find it useful, whithout real penalty. 
 So in the proposed library:
 a) Nearly all primitives could be used for all three axis. This is  simply done by having the axis name being the last letter of the primitive (primx, primy, primz...). 
 b) The translation parameters are part of most primitive (not all)
 c) You could use negative extrusion and where physically sound, negative dimensions.
-d) Setting the main dimension parameter negative will center the extrusion, saving the 'CENTER' parameter - for dimensions which could not physically negative (a diameter...)
+d) Setting the main dimension parameter negative will center the extrusion, saving the 'CENTER' parameter - for dimensions which could not be physically negative (a diameter...)
 e) No vector use, so no brackets
   With that, you have the primitive and associated movements done in one go. Designed for my own purpose, I find that useful and a wrist saver.
 */
@@ -373,6 +373,7 @@ cone3z (2, 4, -4, -2, -6, 20,-24);
 cone3z (4, 2, -4, 2,  -6, 20,-32);
 //*/
 
+// cconen primitives may be deprecated in favor of cone3n primitives - avoid using them
 module cconex (diam1, diam2, ht, htcyl=-1, x=0,y=0,z=0,div=$fn, fh=1) {
   // if htcyl negative, go from reference plan
   // if htcyl positive, cone atop cylinder
@@ -397,6 +398,7 @@ module cconez (diam1, diam2, ht, htcyl=-1, x=0,y=0,z=0,div=$fn, fh=1) {
   cylz (diam1, abs(htcyl)*sign(ht)*sign(htcyl),x,y,z, div, fh);
 }
 
+// filleting primitives - the fillet is an independant volume
 module filletx (rad, lg, x=0,y=0,z=0) {
   mv = (rad<0)?rad+0.02:0;
   mv2 = (rad<0)?rad:0;
