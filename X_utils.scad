@@ -6,7 +6,7 @@ include <Z_library.scad>
 // include <X_utils.scad> xpart=0; //xpart=0 neutralise demo
 
 // build_fan(size=40, thk=6) // ~ok for 25,30,40,60,80,120
-// BB (type="623", orient=1);  // ball bearings
+// BB (type="623", side=1);  // ball bearings
 // nema17(lg=40) // Nema17 stepper
 // plate(txt=["Bonjour"], clr="white", wd=50, ht=30, thick=1.6, txtsize=3, bordercf=1) // plate with text
 // multiline(ttext, txtsize, thktext=0.5) // write text in 'z' axis
@@ -17,7 +17,9 @@ include <Z_library.scad>
 // glasslock(thkglass=6, extent=10) // side glass/mirror retainer
 // Tglasslock(thkglass=6) // glass/mirror retainer 'T' shape
 
+/* [Hidden] */
 xpart=90; // show demo parts
+
 thkglass=4;
 nbpart=4;
 
@@ -58,20 +60,20 @@ module build_fan(size=40, thk=6) { //~ok for 25,30,40,60,80,120. Not ok for 92
 
 //-- Ball bearings ------------------------------------------------
 
-module BBx (type="623", orient=1, x=0,y=0,z=0) { // orient set the flange on one side or the other
+module BBx (type="623", side=1, x=0,y=0,z=0) { // side set the flange on one side or the other
   tsl (x,y,z)
     rot (0,90)
-      BB(type, orient);
+      BB(type, side);
 }
 
 // It is important to note that for flanged bearing, the reference plane is the internal flange face, while for plain bearing, it is the bearing face
 
-module BB (type="623", orient=1) {
-  module B(De,di,thk,Flthk2=0,DFl=0, orient, flanged=false) {
+module BB (type="623", side=1) {
+  module B(De,di,thk,Flthk2=0,DFl=0, side, flanged=false) {
     Flthk = (flanged)?Flthk2:0;
     echo (refBB=refBB);
-    mz = (orient==0)?-thk/2:0; 
-    mirr = (orient==-1)?true:false;
+    mz = (side==0)?-thk/2:0; 
+    mirr = (side==-1)?true:false;
     DF = (DFl) ? DFl: De+1.5*Flthk;
     tsl (0,0,mz)
     mirrorz(mirr)
@@ -89,47 +91,60 @@ module BB (type="623", orient=1) {
   refBB  = (type[0]=="F")?type:(type[0]=="6")?str("F",type):type; 
   flanged= (type[0]=="F")?true:false;
   
-       if (refBB=="F602") B(7,2,2.8,0.7,8.5,orient,flanged);   
-  else if (refBB=="F602X")B(8,2.5,2.8,0.7,9.5, orient,flanged);          
-  else if (refBB=="F603") B(9,3,3,0.7,10.5, orient,flanged);   
-  else if (refBB=="F604") B(12,4,4,1,13.5,  orient,flanged);    
-  else if (refBB=="F605") B(14,5,5,1,16,    orient,flanged);  
-  else if (refBB=="F606") B(17,6,6,1.2,19,  orient,flanged); 
-  else if (refBB=="F607") B(19,7,6,1.5,22,  orient,flanged);   
-  else if (refBB=="F608") B(22,8,7,1.5,25,  orient,flanged);  
+       if (refBB=="F602") B(7,2,2.8, 0.7,8.5,side,flanged);   
+  else if (refBB=="F602X")B(8,2.5,2.8, 0.7,9.5, side,flanged);          
+  else if (refBB=="F603") B(9,3,3, 0.7,10.5, side,flanged);   
+  else if (refBB=="F604") B(12,4,4, 1,13.5,  side,flanged);    
+  else if (refBB=="F605") B(14,5,5, 1,16,    side,flanged);  
+  else if (refBB=="F606") B(17,6,6, 1.2,19,  side,flanged); 
+  else if (refBB=="F607") B(19,7,6, 1.5,22,  side,flanged);   
+  else if (refBB=="F608") B(22,8,7, 1.5,25,  side,flanged);  
   
-  else if (refBB=="F623") B(10,3,4,1,11.5,orient,flanged);  
-  else if (refBB=="F624") B(13,4,5,1,15,  orient,flanged);  
-  else if (refBB=="F625") B(16,5,5,1,18,  orient,flanged);
-  else if (refBB=="F626") B(19,6,6,1.5,22,orient,flanged);    
-  else if (refBB=="F627") B(22,7,7,1.5,25,orient,flanged);        
+  else if (refBB=="F623") B(10,3,4, 1,11.5,side,flanged);  
+  else if (refBB=="F624") B(13,4,5, 1,15,  side,flanged);  
+  else if (refBB=="F625") B(16,5,5, 1,18,  side,flanged);
+  else if (refBB=="F626") B(19,6,6, 1.5,22,side,flanged);    
+  else if (refBB=="F627") B(22,7,7, 1.5,25,side,flanged);        
   
-  else if (refBB=="F633") B(13,3,5,1,15,  orient,flanged);
-  else if (refBB=="F634") B(16,4,5,1,18,  orient,flanged);  
-  else if (refBB=="F635") B(19,5,6,1.5,22,orient,flanged);    
-  else if (refBB=="F636") B(22,6,7,1.5,25,orient,flanged);      
-    
-  else if (refBB=="F675") B(8,5,2.5,0.7,9.5, orient,flanged);      
-    
-  else if (refBB=="F683") B(7,3,3,0.8,8.1,orient,flanged);   
-  else if (refBB=="F684") B(9, 4,4,1,10.4,orient,flanged);   
-  else if (refBB=="F685") B(11,5,3,1,13,  orient,flanged);     
-  else if (refBB=="F686") B(13,6,5,1.1,15,orient,flanged);   
-  else if (refBB=="F687") B(14,7,5,1.1,16,orient,flanged);   
-  else if (refBB=="F688") B(16,8,5,1.1,18,orient,flanged);   
+  else if (refBB=="F633") B(13,3,5, 1,15,  side,flanged);
+  else if (refBB=="F634") B(16,4,5, 1,18,  side,flanged);  
+  else if (refBB=="F635") B(19,5,6, 1.5,22,side,flanged);    
+  else if (refBB=="F636") B(22,6,7, 1.5,25,side,flanged);      
 
-  else if (refBB=="F693") B(8, 3,4,0.9,9.5,orient,flanged);     
-  else if (refBB=="F694") B(11,4,4,1,12.5, orient,flanged);       
-  else if (refBB=="F695") B(13,5,4,1,15, orient,flanged);    
+  else if (refBB=="F674") B(8,4,2.4, 0.7,9.5, side,flanged);    
+  else if (refBB=="F675") B(8,5,2.5, 0.7,9.5, side,flanged);          
+  else if (refBB=="F683") B(7,3,3, 0.8,8.1,side,flanged);   
+  else if (refBB=="F684") B(9, 4,4, 1,10.4,side,flanged);   
+  else if (refBB=="F685") B(11,5,3, 1,13,  side,flanged);     
+  else if (refBB=="F686") B(13,6,5, 1.1,15,side,flanged);   
+  else if (refBB=="F687") B(14,7,5, 1.1,16,side,flanged);   
+  else if (refBB=="F688") B(16,8,5, 1.1,18,side,flanged); 
     
-  else if (refBB=="MR63") B(6,3,2,0,0,      orient,flanged); 
-  else if (refBB=="MF63") B(6,3,2.5,0.6,7.2,orient,true);   
-  else if (refBB=="MR73") B(7,3,3,0,0,      orient,flanged); 
-  else if (refBB=="MF74") B(7,4,2.5,0.6,8.2,orient,true);   
-  else if (refBB=="MR83") B(8,3,2.5,0,0,    orient,flanged);
-  else if (refBB=="MR83b")B(8,3,3,0,0,      orient,flanged);    
-  else if (refBB=="MR93") B(9,3,4,0,0,      orient,flanged); 
-  else if (refBB=="MR103")B(10,3,4,0,0,     orient,flanged); // same as 623 
+  else if (refBB=="F692") B(6,2,2.3, 0.6,7.5,side,flanged);     
+  else if (refBB=="F693") B(8, 3,4, 0.9,9.5,side,flanged);     
+  else if (refBB=="F694") B(11,4,4, 1,12.5, side,flanged);       
+  else if (refBB=="F695") B(13,5,4, 1,15, side,flanged);    
+  else if (refBB=="F696") B(15,6,5, 1.2,17, side,flanged);     
+  else if (refBB=="F697") B(17,7,5, 1.2,19, side,flanged); 
+    
+  else if (refBB=="MR62") B(6,2,2.5, 0,0,    side,flanged);   
+  else if (refBB=="MR63") B(6,3,2, 0,0,      side,flanged); 
+  else if (refBB=="MF63") B(6,3,2.5, 0.6,7.2,side,true);   
+  else if (refBB=="MR73") B(7,3,3, 0,0,      side,flanged); 
+  else if (refBB=="MR74") B(7,4,2,0,0,      side,flanged);   
+  else if (refBB=="MR82") B(8,2.5,2.5, 0,0,  side,flanged);  
+  else if (refBB=="MR83") B(8,3,2.5, 0,0,    side,flanged);
+  else if (refBB=="MR83b")B(8,3,3, 0,0,      side,flanged);    
+  else if (refBB=="MR93") B(9,3,4, 0,0,      side,flanged);
+  else if (refBB=="MR103")B(10,3,4, 0,0,     side,flanged); // same as 623 
+  else if (refBB=="MF74") B(7,4,2.5,0.6,8.2,side,true);   
+  else if (refBB=="MFR4") B(7,4,2.5, 0,0,    side,flanged);     
+  else if (refBB=="MR95") B(9,5,3, 0,0,      side,flanged);    
+  else if (refBB=="MR105")B(10,5,3, 0,0,     side,flanged);  
+  else if (refBB=="MR115")B(11,5,4, 0,0,     side,flanged); 
+    
+  else if (refBB=="MR106")B(10,6,3, 0,0,     side,flanged);    
+  else if (refBB=="MR126")B(12,6,4, 0,0,     side,flanged);      
 }
 
 module nema17(lg=40) { // NEMA 17 stepper motor. - replace by STL ??
