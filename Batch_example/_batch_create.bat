@@ -37,3 +37,4 @@ del batch_images.bat
 ren batch_images.echo batch_images.bat
 del batch_dataset1.bat
 ren batch_dataset1.echo batch_dataset1.bat
+cmd

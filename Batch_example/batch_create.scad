@@ -3,18 +3,20 @@
 //It shall be called from a  windows batch, conventionally named '_batch_create.bat'
  //You can generate as many batches as you want by modifying the batch selector below
  
+batchnum=0; // to check batch generation with customizer 
+ 
 if (batchnum==1) batch(part_set); // directory is default (STL)
 else if (batchnum==2) batch(dxf_set,"DXF");  
 else if (batchnum==3) batch(text_set,"TEXTS");    
 else if (batchnum==4) batch(images_set,"PNG"); 
-else if (batchnum==5) batch(part_set, "DATA1", dataset="ds1");   "
+else if (batchnum==5) batch(part_set, "DATA1", dataset="ds1");   
 
 //batch () 1rst Parameter is a vector of vectors (see below), 2nd is directory, third is project prefix, 4rth is scad file, 5th is dataset - remember that in openscad you can define parameters in any order if you designate them by name e.g. 'batch (part1set,dataset="ds1");'.
 
-//== What shall be in each called '.scad' file =========
 //Part names shall not have whitespace or file forbidden characters in them. File extension is compulsory
 //The first number is the 'part' number. Name is optional for stl files only 
 // The part sets below are just examples
+// The part number refer to the part in associated .scad file, note that there can be many scad, so you can have same number for different parts, hence the importance of prefix.
 part_set = [
   [1,"switch_arm.stl"],[2,"central_frame.stl"],[3,"swing_cover.stl"],[4,"motor_frame.stl"], [0,"ensemble.png"]
 ];
@@ -28,6 +30,7 @@ images_set = [
   [1,"switch_arm.png"],[2,"central_frame.png"],[3,"swing_cover.png"]
 ];
 
+//== What shall be in each called '.scad' file =========
 part=0; // this will be recorded with parameter set, so this shall be removed manually from each called set.
 
 //you shall have a part selector like 
@@ -63,12 +66,12 @@ thisDataset = "";
 thisJSON = str(_join([for (i=[0:len(thisScad)-5]) thisScad[i]],
      len(thisScad)-5,""),"json");
 
-module batch(set, directory="STL", prefix=thisProject, scadfile = thisScad, dataset = thisDataset) {
+module batch(set, directory="STL", prefix=thisProject, scadfile = thisScad, dataset = thisDataset, partname="part") {
   bt1 = str("\nstart /w ",OpenSCAD_dir," -o ",(directory)?str(directory,"/"):"",prefix,"_",(dataset)?str(dataset,"_"):"");
   function line (val) = 
     str(bt1,(val[0]<10)?"0":"",val[0],"_",(val[1])?val[1]:".stl",
     (dataset)? str(" --enable=customizer -p ",thisJSON," -P ",dataset," "):"", 
-    " -D part=",val[0]," ",  
+    " -D ",partname,"=",val[0]," ",  
   (val[2])?val[2]:scadfile,"\necho: "); 
   
    for (i=[0:len(set)-1])
