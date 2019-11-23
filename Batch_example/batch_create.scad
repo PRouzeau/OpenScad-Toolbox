@@ -1,6 +1,7 @@
-// This is a batch generator for Windows, allowing automatic file generation, these files being stl, obj, png, dxf or echo (the last one for specifications, BOM, lists, etc.)
+//// This is an example batch generator for Windows, allowing automatic file generation from an OpenSCAD program, the exported files format can be stl, obj, png, dxf or echo (the last one for specifications, BOM, lists, etc.)
+//This batch generator DOES NOT export models, it CREATES  batch file(s) which can do so.
 //Author : Pierre ROUZEAU, License: GPL2 or above
-//It shall be called from a  windows batch, conventionally named '_batch_create.bat'
+//This batch generator shall be called from a  windows batch, conventionally named '_batch_create.bat'
  //You can generate as many batches as you want by modifying the batch selector below
  
 batchnum=0; // to check batch generation with customizer 
@@ -18,7 +19,7 @@ else if (batchnum==5) batch(part_set, "DATA1", dataset="ds1");
 // The part sets below are just examples
 // The part number refer to the part in associated .scad file, note that there can be many scad, so you can have same number for different parts, hence the importance of prefix.
 part_set = [
-  [1,"switch_arm.stl"],[2,"central_frame.stl"],[3,"swing_cover.stl"],[4,"motor_frame.stl"], [0,"ensemble.png"]
+  [1,"switch_arm.stl"],[2,"central_frame.stl"],[3,"swing_cover.stl"],[4,"motor_frame.stl"], [0,"ensemble.png"] // last file export image instead of 3D part to show the ensemble
 ];
 dxf_set =  [
   [21,"panel1.dxf"],[2,"panel2.dxf"],[3,"panel3.stl"]
@@ -33,7 +34,7 @@ images_set = [
 //== What shall be in each called '.scad' file =========
 part=0; // this will be recorded with parameter set, so this shall be removed manually from each called set.
 
-//you shall have a part selector like 
+//Within your OpenSCAD program, you shall have a part selector like 
 if (part==1) create_part1();
 else if (part==2) create_part2(); 
 else if (part==3) create_part3();   
@@ -55,17 +56,17 @@ module create_part2 () {  }
 
 //== end of example of what shall be in your Scad ======
 
-//-- parameters to adjust for your project -------------
+//-- parameters to adjust for your project ----
 OpenSCAD_dir = "c:\"/Program Files/OpenSCAD/openscad.exe\"";
 thisScad = "my_project.scad"; // file name including extension '.scad'
 thisProject = "My_Project"; //File name prefix, no space, only valid file characters - can be empty
 thisDataset = "";
 //thisDataset = "dataset"; // if using a customizer dataset - A json file can contain multiple datasets
-//-- End of adjustable parameters ---------------------
+//-- End of adjustable parameters --------
 
 thisJSON = str(_join([for (i=[0:len(thisScad)-5]) thisScad[i]],
      len(thisScad)-5,""),"json");
-
+//The below module export Window batch as '.echo' files.
 module batch(set, directory="STL", prefix=thisProject, scadfile = thisScad, dataset = thisDataset, partname="part") {
   bt1 = str("\nstart /w ",OpenSCAD_dir," -o ",(directory)?str(directory,"/"):"",prefix,"_",(dataset)?str(dataset,"_"):"");
   function line (val) = 
