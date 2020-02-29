@@ -41,8 +41,12 @@ solidxy = [1,1,0];
 solidxz = [1,0,1];
 solidyz = [0,1,1];
 
+//== Legacy ================================
+//When a duplicate mirror is neutralised, simple mirror (if set to false, do nothing)
+//It may be better to have it false, but the legacy behaviour was always mirroring
+dmirr_s = true;
 
-//== PART I  : PRIMITIVES =========================================================
+//== PART I  : PRIMITIVES ==================
 // cylinder, first parameter is diameter, then extrusion length
 // Negative Diameter CENTER extrusion, Negative extrusions are Ok
 // usage: cyly (12,-40); -- cyly (12,-40, 8, 10, 9, 6); (hexagon)
@@ -55,6 +59,9 @@ module cylx (diam,length,x=0,y=0,z=0,div=$fn, fh=1) {//Cylinder on X axis
   translate([x+mv,y,z])
     rotate([0,90,0])
       cylinder (d=(abs(diam)+fh*holeplay), h=abs(length), $fn=div, center=center);
+	//next to allow sequential operations
+	translate([x+(diam<0?0:length),y,z])
+		children();
 }
 
 module cyly (diam,length,x=0,y=0,z=0,div=$fn, fh=1) {//Cylinder on Y axis
@@ -66,6 +73,9 @@ module cyly (diam,length,x=0,y=0,z=0,div=$fn, fh=1) {//Cylinder on Y axis
   translate([x,y+mv,z]) 
     rotate([-90,0,0])
       cylinder (d=(abs(diam)+fh*holeplay), h=abs(length), $fn=div, center=center);
+	//next to allow sequential operations
+	translate([x,y+(diam<0?0:length),z])
+		children();
 }
 
 module cylz (diam,height,x=0,y=0,z=0,div=$fn, fh=1) { // Cylinder  on Z axis
@@ -76,6 +86,9 @@ module cylz (diam,height,x=0,y=0,z=0,div=$fn, fh=1) { // Cylinder  on Z axis
   center=(diam<0)?true:false;	
   translate([x,y,mv+z]) 
     cylinder (d=(abs(diam)+fh*holeplay), h=abs(height), $fn=div, center=center);
+	//next to allow sequential operations
+	translate([x,y,z+(diam<0?0:height)])
+		children();
 }
 
 module mcube (sx,sy,sz,center=false,x=0,y=0,z=0, solid=[-1,-1,-1]) { // accept negative coordinates but only if center==false else result is wrong
@@ -701,17 +714,25 @@ module mirrorz (mi=true) {
   mirror([0,0,mm]) children();
 }
 
-module dmirrorx (dup=true, x=0) { // duplicate and mirror
-  if (dup) tsl(x) children();
-  mirror ([1,0,0]) tsl(x) children();  
+module dmirrorx (dup=true, x=0, nmirr=dmirr_s) { // duplicate and mirror
+  if(dup||!nmirr)
+		tsl(x) children();
+	if(dup||nmirr)
+		mirror ([1,0,0]) tsl(x) children();  
 }
-module dmirrory (dup=true, y=0) {
-  if (dup) tsl(0,y) children();
-  mirror ([0,1,0]) tsl(0,y) children();
+module dmirrory (dup=true, y=0, nmirr=dmirr_s) {
+  if(dup||!nmirr)
+		tsl(0,y) children();
+	if(dup||nmirr)
+		mirror([0,1,0])
+			tsl(0,y) children();
 }
-module dmirrorz (dup=true, z=0) {
-  if (dup) tsl(0,0,z) children();
-  mirror ([0,0,1]) tsl(0,0,z) children();
+module dmirrorz (dup=true, z=0, nmirr=dmirr_s) {
+	if(dup||!nmirr)
+		tsl(0,0,z) children();
+	if(dup||nmirr)
+		mirror ([0,0,1])
+			tsl(0,0,z) children();
 }
 
 module duplMirror (x,y,z) {//mirror AND maintain the base- beware, OpenSCAD is not iterative
