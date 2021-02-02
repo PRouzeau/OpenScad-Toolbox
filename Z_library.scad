@@ -1,6 +1,7 @@
 //OpenSCAD library modules - written from scratch - 
-// (c) Pierre ROUZEAU(aka PRZ)2015-2017 Licence:  LGPL V3 
+// (c) Pierre ROUZEAU(aka PRZ)2015-2021 Licence:  LGPL V3 
 // Rev. 7 may 2017 : corrected ldupln function, which was making wrong count, so wrong tenons/slots
+// Rev 2021: Add profiles, misc. modifications, add 'dark' color.			 
 /*OpenSCAD primitives gives a priority to z axis, which needs a lot of subsequent rotations. So, you quickly find yourself lost between your axis, which have been swapped by the rotations. That drive for complex objects to build them on a X/Y plane, then to rotate the ensemble. It is tedious and unpractical.
   Also, OpenSCAD is using a lot of brackets, which are hard to get on some non-QWERTY keyboards.
   This library is aimed to ease openSCAD programming and improve readability. Also, primitive names are short. This is not the todays trend, but I find it useful, whithout real penalty. 
@@ -43,8 +44,8 @@ solidyz = [0,1,1];
 
 //== Legacy ================================
 //When a duplicate mirror is neutralised, simple mirror (if set to false, do nothing)
-//It may be better to have it false, but the legacy behaviour was always mirroring
-dmirr_s = true;
+//It is recommended to have the below variable false, but the legacy behaviour was always mirroring
+dmirr_s = false;
 
 //== PART I  : PRIMITIVES ==================
 // cylinder, first parameter is diameter, then extrusion length
@@ -55,10 +56,11 @@ module cylx (diam,length,x=0,y=0,z=0,div=$fn, fh=1) {//Cylinder on X axis
   if (fh==false) 
     echo ("cyly : change holeplay parameter to numeric");
   mv=(length<0)?length:0;					// not ok if diam AND length are negative. who cares ? 
-  center=(diam<0)?true:false;	
-  translate([x+mv,y,z])
-    rotate([0,90,0])
-      cylinder (d=(abs(diam)+fh*holeplay), h=abs(length), $fn=div, center=center);
+  center=(diam<0)?true:false;
+  if(length && diam) //avoid warning when h==0
+	translate([x+mv,y,z])
+			rotate([0,90,0])
+				cylinder (d=(abs(diam)+fh*holeplay), h=abs(length), $fn=div, center=center);
 	//next to allow sequential operations
 	translate([x+(diam<0?0:length),y,z])
 		children();
@@ -69,10 +71,11 @@ module cyly (diam,length,x=0,y=0,z=0,div=$fn, fh=1) {//Cylinder on Y axis
   if (fh==false) 
     echo ("cyly : change holeplay parameter to numeric");
   mv=(length<0)?length:0; // accept negative height		
-  center=(diam<0)?true:false;	
-  translate([x,y+mv,z]) 
-    rotate([-90,0,0])
-      cylinder (d=(abs(diam)+fh*holeplay), h=abs(length), $fn=div, center=center);
+  center=(diam<0)?true:false;
+	if(length && diam)
+		translate([x,y+mv,z]) 
+			rotate([-90,0,0])
+				cylinder (d=(abs(diam)+fh*holeplay),h=abs(length), $fn=div, center=center);
 	//next to allow sequential operations
 	translate([x,y+(diam<0?0:length),z])
 		children();
@@ -83,9 +86,10 @@ module cylz (diam,height,x=0,y=0,z=0,div=$fn, fh=1) { // Cylinder  on Z axis
   if (fh==false) 
     echo ("cyly : change holeplay parameter to numeric");
   mv=(height<0)?height:0; 	// accept negative height	
-  center=(diam<0)?true:false;	
-  translate([x,y,mv+z]) 
-    cylinder (d=(abs(diam)+fh*holeplay), h=abs(height), $fn=div, center=center);
+  center=(diam<0)?true:false;
+	if(height && diam)
+		translate([x,y,mv+z]) 
+			cylinder (d=(abs(diam)+fh*holeplay), h=abs(height), $fn=div, center=center);
 	//next to allow sequential operations
 	translate([x,y,z+(diam<0?0:height)])
 		children();
@@ -476,8 +480,7 @@ tsl(25,35) {
   } 
 } //*/
 
-//== PART II : DEVELOPPED PRIMITIVES ===================================================
-
+//== PART II : DEVELOPPED PRIMITIVES =================
 // Rather basic bolt routines // head size is realistic only in metric
 // Bolts type are "HEX", "SH" (socket head), "DOME" and "FLAT" - all uppercase-
 // dome shown is medium size, default "HEX"
@@ -538,7 +541,7 @@ module boltz (d,l,x=0,y=0,z=0,type="HEX", washer) {
       boltx(d,l,0,0,0,type, washer); 
 }
 
-//--- Text display --------------------------------------------------------------
+//--- Text display ----------------------------
 
 module textz (txt,size,h,bold,x=0,y=0,z=0, hal="left", val ="baseline") { // position text normal to z axis
   a =(h<0)?180:0;
@@ -655,7 +658,7 @@ cutang = 360-sectang;
   }
 }
 
-//--- Profiles ------------------------------------------------------------------
+//--- Profiles ------------------------------------
 // profile_angle (30, 30, 2, -80) ;
 module profile_angle (legW, legH, thickness, length) { // length could be negative
   mv = (length<0)?length:0;
@@ -665,7 +668,7 @@ module profile_angle (legW, legH, thickness, length) { // length could be negati
         square ([legW,legH]);
         tsl(thickness,thickness) 
           square ([legW,legH]);
-      }  
+      }
 }
 
 //profile_T(20,20,1.5, 100);
@@ -677,7 +680,30 @@ module profile_T (width, height, thickness, length) { // length could be negativ
       polygon(points=[[-w,0],[w,0],[w,thickness],[thickness/2,thickness],[thickness/2,height],[-thickness/2,height],[-thickness/2,thickness],[-w,thickness]]);
 }
 
-//== PART III : OPERATORS ==================================================
+//----------------------------------------
+module profile_rectangle (wd,ht, thk, length) { // length could be negative
+  mv = (length<0)?length:0;
+  tsl(0,0,mv)
+    linear_extrude (height=abs(length)) 
+      difference () {
+        square ([ht,wd]);
+        tsl(thk,thk) 
+          square ([ht-2*thk,wd-2*thk]);
+      }  
+}
+//-----------------------------------------
+module profile_u (wd,ht, thk, length) { // length could be negative
+  mv = (length<0)?length:0;
+  tsl(0,0,mv)
+    linear_extrude (height=abs(length)) 
+      difference () {
+        square ([ht,wd]);
+        tsl(thk,thk) 
+          square ([ht-2*thk,wd]);
+      }  
+}
+
+//== PART III : OPERATORS =======================   
 //aliases
 module u() {union() children();} // union alias
  
@@ -825,7 +851,7 @@ module quadz (x,y,z=0) { // create four blocs at -x/-x and +y/-y (mirrored)
   }
 }
 
-//== PART IV : MISCELLANEOUS ===================================================
+//== PART IV : MISCELLANEOUS =====================
 
 //-- Miscellaneous Modules ---------------
 module dome (d,ht,x,y,z){ // origin base of dome - rise in 'z' axis
@@ -852,6 +878,8 @@ module segz (d,depth, x1,y1,x2,y2) { //extrude rounded segment
 
 //-- color modules ---------------------------
 module black() {color ("black") children();}
+//black color is problematic in OpenScad as you can't view shapes, so a not completely black color is created and called 'dark'
+module dark() {color([0.22,0.22,0.22]) children();}
 module white() {color ("white") children();}
 module silver(){color ("silver") children();}
 module gray()  {color ("gray") children();}
